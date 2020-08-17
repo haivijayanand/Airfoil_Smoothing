@@ -1,0 +1,1064 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>unpa</title><meta name="generator" content="MATLAB 9.8"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2020-07-01"><meta name="DC.source" content="unpa.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img, h1 img, h2 img { margin-bottom:0px; }
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, code { font-size:12px; }
+tt { font-size: 1.2em; }
+pre { margin:0px 0px 20px; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+pre.error { color:red; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+span.typesection { color:#A0522D }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><pre class="codeinput"><span class="comment">% -------------------------------------------------------------------------</span>
+<span class="comment">% Universal Parametric Geometry Representation Method</span>
+<span class="comment">% Modified by K Vijay Anand to suite Airfoil Needs</span>
+<span class="comment">% unpa V3.0</span>
+<span class="comment">% -------------------------------------------------------------------------</span>
+<span class="comment">% PURPOSE   - Create analitically smooth airfoils</span>
+<span class="comment">% -------------------------------------------------------------------------</span>
+<span class="comment">% Coded by: Massimiliano Di Muzio - November 2008</span>
+<span class="comment">% -------------------------------------------------------------------------</span>
+<span class="comment">% References:</span>
+<span class="comment">% Journal of Aircraft Vol.45, No. 1, January-February 2008, Pag. 142</span>
+<span class="comment">% -------------------------------------------------------------------------</span>
+<span class="comment">% Basic description:</span>
+<span class="comment">% C(phi)    = phi^N1 * (1 - phi)^N2            --&gt; Class Function</span>
+<span class="comment">% S(phi)    = sum[A(i) * S(phi(i))] i: 0--&gt;BO  --&gt; Shape Function</span>
+<span class="comment">% BO        = Bernstein polynomial order</span>
+<span class="comment">% S(r,n)(x) = K(r,n)*x^r(1-x)^(n-r)</span>
+<span class="comment">% K(r,n)    = n! / (r! * (n - r)!)</span>
+<span class="comment">%</span>
+<span class="comment">% Hint: 3 &lt;= BO &lt;= 5 works best</span>
+<span class="comment">% -------------------------------------------------------------------------</span>
+<span class="comment">% V3.0 - July 2010</span>
+<span class="comment">% - Added file management and dimensional airfoil management -</span>
+<span class="comment">% - Added distance computation                               -</span>
+
+clear <span class="string">all</span>;
+close <span class="string">all</span>;
+clc
+
+<span class="comment">%cd('D:\Work\Test');</span>
+
+<span class="comment">% [FileName,PathName] = uigetfile('*.txt;*.dat','Select the airfoil-file');</span>
+<span class="comment">% myfile=strcat(PathName,FileName);</span>
+<span class="comment">%</span>
+<span class="comment">% cd(PathName);</span>
+
+myfile = <span class="string">'64A612.dat'</span>;
+
+Airfoil=load(myfile);
+
+fprintf(<span class="string">'\n *********************** IMPORTANT **************************'</span>);
+fprintf(<span class="string">'\n * Airfoil coordinates must be supplied in 2 columns        *'</span>);
+fprintf(<span class="string">'\n * 1) Lower TE --&gt; LE --&gt; Upper TE (Clokwise)               *'</span>);
+fprintf(<span class="string">'\n * 2) Upper TE --&gt; LE --&gt; Lower TE (Counter-clokwise)       *'</span>);
+fprintf(<span class="string">'\n ************************************************************'</span>);
+fprintf(<span class="string">'\n '</span>);
+
+<span class="comment">% ik = menu('Choose a direction','Clockwise','Counter Clockwise');</span>
+
+ik=2;
+<span class="comment">% k = menu('Choose a geometrical shape class','NACA-type airfoil','Elliptic airfoil','Biconvex airfoil','Sears-Haack distribution','Projectile','Wedge','Circular duct');</span>
+k=1;
+<span class="comment">% BO = input('\n Insert Bernstein polynomial order ... ');</span>
+BO=5;
+<span class="comment">% new_num_pts = input('\n Insert number of points of analitically smooth airfoil ... ');</span>
+new_num_pts=300;
+new_num_pts = round(new_num_pts /2.);
+
+<span class="comment">% SpacingLaw = menu('Point distribution','Uniform','Full cosine - Dense near both LE and TE','Half cosine - Dense near LE','Half sine - Dense near TE','Read from file - xnew.dat');</span>
+SpacingLaw = 3;
+
+<span class="keyword">switch</span> k
+    <span class="keyword">case</span> 1
+    N1=0.5;
+    N2=1.0;
+    <span class="keyword">case</span> 2
+    N1=0.5;
+    N2=0.5;
+    <span class="keyword">case</span> 3
+    N1=1.0;
+    N2=1.0;
+    <span class="keyword">case</span> 4
+    N1=0.75;
+    N2=0.75;
+    <span class="keyword">case</span> 5
+    N1=0.75;
+    N2=0.25;
+    <span class="keyword">case</span> 6
+    N1=1.0;
+    N2=0.001;
+    <span class="keyword">case</span> 7
+    N1=0.001;
+    N2=0.001;
+<span class="keyword">end</span>
+
+<span class="comment">% Re = input('\n Insert Flight Reynolds Number ... ');</span>
+
+Re=1e6;
+
+<span class="comment">% DO NOT CHANGE BELOW !!!</span>
+<span class="comment">% -------------------------------------------------------------------------</span>
+
+x=Airfoil(:,1);
+y=Airfoil(:,2);
+
+npt=length(x);       <span class="comment">%npt   ==&gt; num. points defining airfoil</span>
+[xmin,ixmin]=min(x); <span class="comment">%ixmin ==&gt; num. points defining upper airfoil</span>
+[xmax,ixmax]=max(x);
+
+chord=xmax-xmin;
+
+<span class="keyword">if</span> ik==1 <span class="comment">%Clockwise</span>
+    <span class="keyword">for</span> i=1:ixmin
+       xl(i)=(x(i)-xmin)/chord;
+       yl(i)=(y(i)-y(ixmin))/chord;
+    <span class="keyword">end</span>
+
+    npt_lower=length(xl);
+
+    <span class="keyword">for</span> i=ixmin:npt
+       xu(i-ixmin+1)=(x(i)-xmin)/chord;
+       yu(i-ixmin+1)=(y(i)-y(ixmin))/chord;
+    <span class="keyword">end</span>
+
+    npt_upper=length(xu);
+
+    dzTEu=(y(npt)-y(ixmin))/chord;    <span class="comment">% z/c location of Upper TE</span>
+    dzTEl=(y(1)-y(ixmin))/chord;      <span class="comment">% z/c location of Lower TE</span>
+<span class="keyword">end</span>
+
+<span class="keyword">if</span> ik==2 <span class="comment">%Counter-Clockwise</span>
+
+    j=0;
+    <span class="keyword">for</span> i=npt:-1:ixmin
+       j=j+1;
+       xl(j)=(x(i)-xmin)/chord;
+       yl(j)=(y(i)-y(ixmin))/chord;
+    <span class="keyword">end</span>
+
+    npt_lower=length(xl);
+    j=0;
+
+    <span class="keyword">for</span> i=ixmin:-1:1
+       j=j+1;
+       xu(j)=(x(i)-xmin)/chord;
+       yu(j)=(y(i)-y(ixmin))/chord;
+    <span class="keyword">end</span>
+
+    npt_upper=length(xu);
+    dzTEu=(y(1)-y(ixmin))/chord;        <span class="comment">% z/c location of Upper TE</span>
+    dzTEl=(y(npt)-y(ixmin))/chord;      <span class="comment">% z/c location of Lower TE</span>
+
+<span class="keyword">end</span>
+<span class="comment">% -------------------------------------------------------------------------</span>
+<span class="comment">% Computing upper side smooth profile coefficients</span>
+<span class="comment">% -------------------------------------------------------------------------</span>
+<span class="keyword">for</span> i=1:npt_upper
+    <span class="keyword">for</span> r=0:BO
+       K(r+1)= factorial(BO)/(factorial(r)*(factorial(BO-r)));
+       S(r+1)=xu(i)^r*(1-xu(i))^(BO-r);
+       A(i,r+1)=xu(i)^N1*(1-xu(i))^N2*K(r+1)*S(r+1);
+    <span class="keyword">end</span>
+    B(i)=yu(i)-xu(i)*dzTEu;
+<span class="keyword">end</span>
+
+Aupper=pinv(A)*B';
+<span class="comment">% -------------------------------------------------------------------------</span>
+clear <span class="string">K</span>;
+clear <span class="string">S</span>;
+clear <span class="string">A</span>;
+clear <span class="string">B</span>;
+<span class="comment">% -------------------------------------------------------------------------</span>
+<span class="comment">% Computing lower side smooth profile coefficients</span>
+<span class="comment">% -------------------------------------------------------------------------</span>
+<span class="keyword">for</span> i=1:ixmin
+    <span class="keyword">for</span> r=0:BO
+       K(r+1)= factorial(BO)/(factorial(r)*(factorial(BO-r)));
+       S(r+1)=xl(i)^r*(1-xl(i))^(BO-r);
+       A(i,r+1)=xl(i)^N1*(1-xl(i))^N2*K(r+1)*S(r+1);
+    <span class="keyword">end</span>
+    B(i)=yl(i)-xl(i)*dzTEl;
+<span class="keyword">end</span>
+
+Alower=pinv(A)*B';
+<span class="comment">% -------------------------------------------------------------------------</span>
+<span class="comment">% Fill up new points</span>
+<span class="comment">% -------------------------------------------------------------------------</span>
+xend=1.0;
+xstart=0.0;
+xnew=Point_Distribution(xstart,xend,new_num_pts,SpacingLaw);
+new_num_pts=length(xnew);
+n_check_pt=6;
+xcheck(1)=0.0125;
+xcheck(2)=0.90;
+xcheck(3)=0.95;
+xcheck(4)=0.99;
+xcheck(5)=0.0015;
+xcheck(6)=0.06;
+<span class="comment">% -------------------------------------------------------------------------</span>
+<span class="comment">% Computing analitically smooth airfoil (unpafoil)</span>
+<span class="comment">% -------------------------------------------------------------------------</span>
+<span class="keyword">for</span> i=1:new_num_pts
+    supp=0.0;
+    slow=0.0;
+    sthi=0.0;
+    scam=0.0;
+    <span class="keyword">for</span> r=0:BO
+       K(r+1)= factorial(BO)/(factorial(r)*(factorial(BO-r)));
+       S(r+1)=xnew(i)^r*(1-xnew(i))^(BO-r);
+       slow=slow+K(r+1)*S(r+1)*Alower(r+1);
+       supp=supp+K(r+1)*S(r+1)*Aupper(r+1);
+       sthi=sthi+K(r+1)*S(r+1)*(Aupper(r+1)-Alower(r+1))/2.;
+       scam=scam+K(r+1)*S(r+1)*(Aupper(r+1)+Alower(r+1))/2.;
+       zupp(i)=xnew(i)^N1*(1-xnew(i))^N2*supp+xnew(i)*dzTEu;
+       zlow(i)=xnew(i)^N1*(1-xnew(i))^N2*slow+xnew(i)*dzTEl;
+       zthi(i)=xnew(i)^N1*(1-xnew(i))^N2*sthi+xnew(i)*(dzTEu-dzTEl)/2.;
+       zcam(i)=xnew(i)^N1*(1-xnew(i))^N2*scam+xnew(i)*(dzTEu+dzTEl)/2.;
+    <span class="keyword">end</span>
+<span class="keyword">end</span>
+<span class="comment">% -------------------------------------------------------------------------</span>
+<span class="comment">% Computing distances</span>
+<span class="comment">% -------------------------------------------------------------------------</span>
+<span class="keyword">for</span> i=1:npt_lower
+    sld=0.0;
+    <span class="keyword">for</span> r=0:BO
+       K(r+1)= factorial(BO)/(factorial(r)*(factorial(BO-r)));
+       Sd(r+1)=xl(i)^r*(1-xl(i))^(BO-r);
+       sld=sld+K(r+1)*Sd(r+1)*Alower(r+1);
+       zld(i)=xl(i)^N1*(1-xl(i))^N2*sld+xl(i)*dzTEl;
+    <span class="keyword">end</span>
+<span class="keyword">end</span>
+
+clear <span class="string">Sd</span>;
+
+<span class="keyword">for</span> i=1:npt_upper
+    sud=0.0;
+    <span class="keyword">for</span> r=0:BO
+       K(r+1)= factorial(BO)/(factorial(r)*(factorial(BO-r)));
+       Sd(r+1)=xu(i)^r*(1-xu(i))^(BO-r);
+       sud=sud+K(r+1)*Sd(r+1)*Aupper(r+1);
+       zud(i)=xu(i)^N1*(1-xu(i))^N2*sud+xu(i)*dzTEl;
+    <span class="keyword">end</span>
+<span class="keyword">end</span>
+
+dist_low=distance(yl,zld,npt_lower); <span class="comment">%Compute distance between original and unpa foil</span>
+dist_upp=distance(yu,zud,npt_upper); <span class="comment">%at given x(i) (which are the originals ones)</span>
+<span class="comment">% -------------------------------------------------------------------------</span>
+<span class="comment">% Computing check points</span>
+<span class="comment">% -------------------------------------------------------------------------</span>
+<span class="keyword">for</span> i=1:n_check_pt
+    supp_c=0.0;
+    slow_c=0.0;
+    sthi_c=0.0;
+    scam_c=0.0;
+    <span class="keyword">for</span> r=0:BO
+       K(r+1)= factorial(BO)/(factorial(r)*(factorial(BO-r)));
+       S(r+1)=xcheck(i)^r*(1-xcheck(i))^(BO-r);
+       slow_c=slow_c+K(r+1)*S(r+1)*Alower(r+1);
+       supp_c=supp_c+K(r+1)*S(r+1)*Aupper(r+1);
+       sthi_c=sthi_c+K(r+1)*S(r+1)*(Aupper(r+1)-Alower(r+1))/2.;
+       scam_c=scam_c+K(r+1)*S(r+1)*(Aupper(r+1)+Alower(r+1))/2.;
+       zupp_c(i)=xcheck(i)^N1*(1-xcheck(i))^N2*supp_c+xcheck(i)*dzTEu;
+       zlow_c(i)=xcheck(i)^N1*(1-xcheck(i))^N2*slow_c+xcheck(i)*dzTEl;
+       zthi_c(i)=xcheck(i)^N1*(1-xcheck(i))^N2*sthi_c+xcheck(i)*(dzTEu-dzTEl)/2.;
+       zcam_c(i)=xcheck(i)^N1*(1-xcheck(i))^N2*scam_c+xcheck(i)*(dzTEu+dzTEl)/2.;
+    <span class="keyword">end</span>
+<span class="keyword">end</span>
+
+Y90=zupp_c(2)-zlow_c(2);
+Y95=zupp_c(3)-zlow_c(3);
+Y99=zupp_c(4)-zlow_c(4);
+PHETE90=0.5*(Y90-Y99)/0.09;
+PHETE95=0.5*(Y95-Y99)/0.04;
+DY=zupp_c(6)-zupp_c(5);
+
+clc
+
+fprintf(<span class="string">'\n ************************************************************'</span>);
+fprintf(<span class="string">'\n * Stall check @ x/c ... %8.4f as in NACA-TN-3963    *'</span>,xcheck(1));
+fprintf(<span class="string">'\n * Upper y/c  ... %8.4f                              *'</span>,zupp_c(1));
+fprintf(<span class="string">'\n * Lower y/c  ... %8.4f                              *'</span>,zlow_c(1));
+fprintf(<span class="string">'\n ************************************************************ \n'</span>);
+
+fprintf(<span class="string">'\n ************************************************************'</span>);
+fprintf(<span class="string">'\n * Cumulative distance between:                      *'</span>);
+fprintf(<span class="string">'\n * Original and unpa lower foil  ... %8.4f           *'</span>,dist_low);
+fprintf(<span class="string">'\n * Original and unpa upper foil  ... %8.4f           *'</span>,dist_upp);
+fprintf(<span class="string">'\n ************************************************************ \n'</span>);
+
+<span class="keyword">for</span> i=1:new_num_pts
+    dx1=0.0;
+    dx2=0.0;
+    <span class="keyword">for</span> r=0:BO
+       K(r+1)= factorial(BO)/(factorial(r)*(factorial(BO-r)));
+       S1(r+1)=dS(xnew(i),K(r+1),r,BO,N1,N2);
+       dx1=dx1+S1(r+1)*Aupper(r+1);
+       S2(r+1)=ddS(xnew(i),K(r+1),r,BO,N1,N2);
+       dx2=dx2+S2(r+1)*Aupper(r+1);
+       d1u(i)=dx1;
+       d2u(i)=dx2;
+    <span class="keyword">end</span>
+<span class="keyword">end</span>
+
+<span class="keyword">for</span> i=1:new_num_pts
+    dx1=0.0;
+    dx2=0.0;
+    <span class="keyword">for</span> r=0:BO
+       K(r+1)= factorial(BO)/(factorial(r)*(factorial(BO-r)));
+       S1(r+1)=dS(xnew(i),K(r+1),r,BO,N1,N2);
+       dx1=dx1+S1(r+1)*Alower(r+1);
+       S2(r+1)=ddS(xnew(i),K(r+1),r,BO,N1,N2);
+       dx2=dx2+S2(r+1)*Alower(r+1);
+       d1l(i)=dx1;
+       d2l(i)=dx2;
+    <span class="keyword">end</span>
+<span class="keyword">end</span>
+<span class="comment">% -------------------------------------------------------------------------</span>
+<span class="comment">% Computing max thickness &amp; camber</span>
+<span class="comment">% -------------------------------------------------------------------------</span>
+[zmax,izmax]=max(abs(zthi));
+[cmax,icmax]=max(abs(zcam));
+t_c=2.*zmax;
+<span class="comment">% -------------------------------------------------------------------------</span>
+<span class="comment">% Writing data on file</span>
+<span class="comment">% -------------------------------------------------------------------------</span>
+M=[xnew;zupp;zlow;zthi;zcam];
+Q=[Aupper';Alower'];
+M=M';
+Q=Q';
+<span class="comment">% -------------------------------------------------------------------------</span>
+[filesmoo,pathsmoo] = uiputfile(<span class="string">'*.dat'</span>,<span class="string">'Save Smoothed Airfoil As'</span>);
+
+mysmoothfile=strcat(pathsmoo,filesmoo);
+myunpafile=strcat(pathsmoo,<span class="string">'unpafoil.dat'</span>);
+myunpaadimfile=strcat(pathsmoo,<span class="string">'adimfoil.dat'</span>);
+mycoefffile=strcat(pathsmoo,<span class="string">'coeff.dat'</span>);
+myauxdatafile=strcat(pathsmoo,<span class="string">'airfoil.aux'</span>);
+
+fid = fopen(myunpafile,<span class="string">'w'</span>);
+fprintf(fid,<span class="string">'#Bernstein Polynomial order BO .................: %i\n'</span>,BO);
+fprintf(fid,<span class="string">'#Number of points of analitically smooth airfoil: %i\n'</span>,new_num_pts);
+fprintf(fid,<span class="string">'#Point spacing law .............................: %i\n'</span>,SpacingLaw);
+fprintf(fid,<span class="string">'#Airfoil chord .................................: %12.8f\n'</span>,chord);
+fprintf(fid, <span class="string">'%s %12.8f %12.8f \n'</span>,<span class="string">'#L.E. coordinates ..............................:'</span>,xmin,y(ixmin));
+fprintf(fid, <span class="string">'%s %12.8f %12.8f \n'</span>,<span class="string">'#Max thickness and x/c location ................:'</span>,t_c,xnew(izmax));
+fprintf(fid, <span class="string">'%s %12.8f %12.8f \n'</span>,<span class="string">'#Max camber and x/c location ...................:'</span>,cmax,xnew(icmax));
+fprintf(fid,<span class="string">'#     x/c       z/c upper    z/c lower    thickness    camber\n'</span>);
+<span class="keyword">for</span> i=1:new_num_pts
+    fprintf(fid,<span class="string">'%12.8f %12.8f %12.8f %12.8f %12.8f \n'</span>,M(i,1),M(i,2),M(i,3),M(i,4),M(i,5));
+<span class="keyword">end</span>
+fclose(fid);
+
+fid = fopen(mysmoothfile,<span class="string">'w'</span>);
+
+fprintf(fid,<span class="string">'%s %s %s\n'</span>,<span class="string">'# '</span>,myfile,<span class="string">' x/c         z/c'</span>);
+<span class="keyword">for</span> i=1:new_num_pts
+    xs=M(new_num_pts-i+1,1)*chord+xmin;
+    zs=M(new_num_pts-i+1,3)*chord+y(ixmin);
+    fprintf(fid,<span class="string">'%12.8f %12.8f\n'</span>,xs,zs);
+<span class="keyword">end</span>
+<span class="keyword">for</span> i=2:new_num_pts
+    xs=M(i,1)*chord+xmin;
+    zs=M(i,2)*chord+y(ixmin);
+    fprintf(fid,<span class="string">'%12.8f %12.8f\n'</span>,xs,zs);
+<span class="keyword">end</span>
+
+fclose(fid);
+
+fid = fopen(myunpaadimfile,<span class="string">'w'</span>);
+
+fprintf(fid,<span class="string">'%s \n'</span>,<span class="string">'#  x/c         z/c'</span>);
+<span class="keyword">for</span> i=1:new_num_pts
+    xs=M(new_num_pts-i+1,1);
+    zs=M(new_num_pts-i+1,3);
+    fprintf(fid,<span class="string">'%12.8f %12.8f\n'</span>,xs,zs);
+<span class="keyword">end</span>
+<span class="keyword">for</span> i=2:new_num_pts
+    xs=M(i,1);
+    zs=M(i,2);
+    fprintf(fid,<span class="string">'%12.8f %12.8f\n'</span>,xs,zs);
+<span class="keyword">end</span>
+
+fclose(fid);
+<span class="comment">% End writing a-dimensionalized foil</span>
+
+dummy=0.0;
+
+fid = fopen(mycoefffile,<span class="string">'w'</span>);
+fprintf(fid,<span class="string">'%%Upper foil Lower foil coefficients (first \t%i\t lines) \n'</span>,BO+1);
+fprintf(fid,<span class="string">'%%Bernstein Polynomial order BO .................: %i\n'</span>,BO);
+fprintf(fid,<span class="string">'%%Upper and Lower TE coordinates.................: %12.8f %12.8f\n'</span>,dzTEu,dzTEl);
+fprintf(fid,<span class="string">'%%Shape factors .................................: %12.8f %12.8f\n'</span>,N1,N2);
+fprintf(fid,<span class="string">'%%Num of points and Spacing Code ................: %i %i\n'</span>,new_num_pts,SpacingLaw);
+fprintf(fid,<span class="string">'%%LE coodinates  ................................: %12.8f %12.8f\n'</span>,xmin,y(ixmin));
+fprintf(fid,<span class="string">'%%Chord and dummy................................: %12.8f %12.8f\n'</span>,chord,dummy);
+fprintf(fid,<span class="string">'%%max thicknes and location .....................: %12.8f %12.8f\n'</span>,t_c,xnew(izmax));
+fprintf(fid,<span class="string">'%%max fineness and location .....................: %12.8f %12.8f\n'</span>,cmax,xnew(icmax));
+
+<span class="keyword">for</span> i=1:BO+1
+    fprintf(fid,<span class="string">'%12.8f %12.8f \n'</span>,Q(i,1),Q(i,2));
+<span class="keyword">end</span>
+fprintf(fid,<span class="string">'%12.8f %12.8f \n'</span>,dzTEu,dzTEl);
+fprintf(fid,<span class="string">'%12.8f %12.8f \n'</span>,N1,N2);
+fprintf(fid,<span class="string">'%i %i \n'</span>,new_num_pts,SpacingLaw);
+fprintf(fid,<span class="string">'%12.8f %12.8f \n'</span>,xmin,y(ixmin));
+fprintf(fid,<span class="string">'%12.8f %12.8f \n'</span>,chord,dummy);
+fprintf(fid,<span class="string">'%12.8f %12.8f \n'</span>,t_c,xnew(izmax));
+fprintf(fid,<span class="string">'%12.8f %12.8f \n'</span>,cmax,xnew(icmax));
+fclose(fid);
+
+fid = fopen(myauxdatafile,<span class="string">'w'</span>);
+fprintf(fid,<span class="string">'%s %s\n'</span>,<span class="string">' Original file name: '</span>,myfile);
+fprintf(fid,<span class="string">' Stall check @ x/c ... %8.4f as in NACA-TN-3963 \n'</span>,xcheck(1));
+fprintf(fid,<span class="string">' x/c ... %8.4f y/c upper ... %8.4f \n'</span>,xcheck(1),zupp_c(1));
+fprintf(fid,<span class="string">' x/c ... %8.4f y/c lower ... %8.4f \n'</span>,xcheck(1),zlow_c(1));
+fprintf(fid,<span class="string">' max thickness ... %8.4f @ x/c ... %8.4f \n'</span>,t_c,xnew(izmax));
+fprintf(fid,<span class="string">' max camber ...... %8.4f @ x/c ... %8.4f \n'</span>,cmax,xnew(icmax));
+fprintf(fid,<span class="string">' tan(phi/2) ...... %8.4f @ x/c ... 0.90 (%8.4f deg)\n'</span>,PHETE90,atan(PHETE90)*180./pi);
+fprintf(fid,<span class="string">' tan(phi/2) ...... %8.4f @ x/c ... 0.95 (%8.4f deg)\n'</span>,PHETE95,atan(PHETE95)*180./pi);
+fprintf(fid,<span class="string">' LE sharpness parameter DY ...... %8.4f \n'</span>,DY);
+fprintf(fid,<span class="string">' Cumulative distance between: \n'</span>);
+fprintf(fid,<span class="string">' Original and unpa lower foil  ... %12.4f \n'</span>,dist_low);
+fprintf(fid,<span class="string">' Original and unpa upper foil  ... %12.4f \n'</span>,dist_upp);
+fclose(fid);
+
+fprintf(<span class="string">'\n Output files: \n'</span>)
+fprintf(<span class="string">'\n 1) %s : Analitically smoothed airfoil'</span>,filesmoo)
+fprintf(<span class="string">'\n 2) unpafoil.dat : A-dimensional airfoil decomposition'</span>)
+fprintf(<span class="string">'\n 3) coeff.dat files : Polynomial coefficients file '</span>)
+fprintf(<span class="string">'\n 4) adimfoil.dat : A-dimensional analitically smoothed airfoil'</span>)
+fprintf(<span class="string">'\n 5) airfoil.aux : Auxiliary geometrical data \n'</span>)
+fprintf(<span class="string">'\n  *** END OF COMPUTATION  *** \n'</span>)
+
+<span class="keyword">if</span> (Re &lt;1.e5) || (Re &gt; 1.e9)
+    fprintf(<span class="string">'\n    ==&gt; Reynolds number outside standard range! Check stall plot not available &lt;== \n'</span>);
+<span class="keyword">end</span>
+
+<span class="comment">% -------------------------------------------------------------------------</span>
+<span class="comment">% Plotting of results</span>
+<span class="comment">% -------------------------------------------------------------------------</span>
+plot(xu,yu,<span class="string">'b'</span>,<span class="string">'LineWidth'</span>,2);
+grid <span class="string">on</span>;
+hold <span class="string">on</span>
+plot(xl,yl,<span class="string">'r'</span>,<span class="string">'LineWidth'</span>,2);
+plot(M(:,1),M(:,2),<span class="string">'bo'</span>);
+plot(M(:,1),M(:,3),<span class="string">'ro'</span>);
+title(<span class="string">'Original vs. smoothed airfoil'</span>)
+legend(<span class="string">'Original foil upper'</span>,<span class="string">'Original foil lower'</span>,<span class="string">'Unpafoil upper'</span>,<span class="string">'Unpafoil lower'</span>)
+xlabel(<span class="string">'x/c'</span>)
+ylabel(<span class="string">'z/c'</span>)
+
+figure(2)
+plot(M(:,1),M(:,4),<span class="string">'LineWidth'</span>,2);
+grid <span class="string">on</span>;
+hold <span class="string">on</span>
+plot(M(:,1),M(:,5),<span class="string">'g'</span>,<span class="string">'LineWidth'</span>,2);
+title(<span class="string">'Smoothed airfoil decomposition'</span>)
+legend(<span class="string">'Thickness'</span>,<span class="string">'Camber'</span>)
+xlabel(<span class="string">'x/c'</span>)
+ylabel(<span class="string">'z/c'</span>)
+
+<span class="comment">%</span>
+figure(3)
+subplot(2,1,1)
+plot(xnew,d1u,<span class="string">'b'</span>);
+title(<span class="string">'Smoothed airfoil curvature analysis'</span>)
+grid <span class="string">on</span>;
+hold <span class="string">on</span>
+plot(xnew,d1l,<span class="string">'r'</span>);
+axis([0.0 1.0 -2.5 2.5])
+legend(<span class="string">'1st derivative upper'</span>,<span class="string">'1st derivative lower'</span>)
+xlabel(<span class="string">'x/c'</span>)
+ylabel(<span class="string">'dz/dx'</span>)
+hold <span class="string">off</span>
+subplot(2,1,2)
+plot(xnew,d2u,<span class="string">'b'</span>);
+hold <span class="string">on</span>
+plot(xnew,d2l,<span class="string">'r'</span>);
+axis([0.0 1.0 -1.5 1.5])
+grid <span class="string">on</span>;
+legend(<span class="string">'2nd derivative upper'</span>,<span class="string">'2nd derivative lower'</span>)
+xlabel(<span class="string">'x/c'</span>)
+ylabel(<span class="string">'d^2z/dx^2'</span>)
+
+<span class="comment">% uiopen('stall.fig',4)</span>
+<span class="comment">% hold on</span>
+<span class="comment">% plot(abs(zupp_c(1)*100),Re,'ro','MarkerFaceColor','r')</span>
+<span class="comment">% plot(abs(zlow_c(1)*100),Re,'bo','MarkerFaceColor','b')</span>
+<span class="comment">% legend('Upper side stall','Lower side stall')</span>
+<span class="comment">%</span>
+<span class="comment">%</span>
+</pre><pre class="codeoutput">
+ *********************** IMPORTANT **************************
+ * Airfoil coordinates must be supplied in 2 columns        *
+ * 1) Lower TE --&gt; LE --&gt; Upper TE (Clokwise)               *
+ * 2) Upper TE --&gt; LE --&gt; Lower TE (Counter-clokwise)       *
+ ************************************************************
+ 
+ ************************************************************
+ * Stall check @ x/c ...   0.0125 as in NACA-TN-3963    *
+ * Upper y/c  ...   0.0170                              *
+ * Lower y/c  ...  -0.0121                              *
+ ************************************************************ 
+
+ ************************************************************
+ * Cumulative distance between:                      *
+ * Original and unpa lower foil  ...   0.0367           *
+ * Original and unpa upper foil  ...   0.0324           *
+ ************************************************************ 
+
+ Output files: 
+
+ 1) 64A612_1.dat : Analitically smoothed airfoil
+ 2) unpafoil.dat : A-dimensional airfoil decomposition
+ 3) coeff.dat files : Polynomial coefficients file 
+ 4) adimfoil.dat : A-dimensional analitically smoothed airfoil
+ 5) airfoil.aux : Auxiliary geometrical data 
+
+  *** END OF COMPUTATION  *** 
+</pre><img vspace="5" hspace="5" src="unpa_01.png" alt=""> <img vspace="5" hspace="5" src="unpa_02.png" alt=""> <img vspace="5" hspace="5" src="unpa_03.png" alt=""> <p class="footer"><br><a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2020a</a><br></p></div><!--
+##### SOURCE BEGIN #####
+% REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH-
+% Universal Parametric Geometry Representation Method
+% Modified by K Vijay Anand to suite Airfoil Needs
+% unpa V3.0
+% REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH-
+% PURPOSE   - Create analitically smooth airfoils
+% REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH-
+% Coded by: Massimiliano Di Muzio - November 2008
+% REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH-
+% References:
+% Journal of Aircraft Vol.45, No. 1, January-February 2008, Pag. 142
+% REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH-
+% Basic description:
+% C(phi)    = phi^N1 * (1 - phi)^N2            REPLACE_WITH_DASH_DASH> Class Function
+% S(phi)    = sum[A(i) * S(phi(i))] i: 0REPLACE_WITH_DASH_DASH>BO  REPLACE_WITH_DASH_DASH> Shape Function
+% BO        = Bernstein polynomial order
+% S(r,n)(x) = K(r,n)*x^r(1-x)^(n-r)
+% K(r,n)    = n! / (r! * (n - r)!)
+%
+% Hint: 3 <= BO <= 5 works best
+% REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH-
+% V3.0 - July 2010
+% - Added file management and dimensional airfoil management -
+% - Added distance computation                               -
+
+clear all;
+close all;
+clc
+
+%cd('D:\Work\Test');
+
+% [FileName,PathName] = uigetfile('*.txt;*.dat','Select the airfoil-file');
+% myfile=strcat(PathName,FileName);
+% 
+% cd(PathName);
+
+myfile = '64A612.dat';
+
+Airfoil=load(myfile);
+
+fprintf('\n *********************** IMPORTANT **************************');
+fprintf('\n * Airfoil coordinates must be supplied in 2 columns        *');
+fprintf('\n * 1) Lower TE REPLACE_WITH_DASH_DASH> LE REPLACE_WITH_DASH_DASH> Upper TE (Clokwise)               *');
+fprintf('\n * 2) Upper TE REPLACE_WITH_DASH_DASH> LE REPLACE_WITH_DASH_DASH> Lower TE (Counter-clokwise)       *');
+fprintf('\n ************************************************************');
+fprintf('\n ');
+
+% ik = menu('Choose a direction','Clockwise','Counter Clockwise');
+
+ik=2;
+% k = menu('Choose a geometrical shape class','NACA-type airfoil','Elliptic airfoil','Biconvex airfoil','Sears-Haack distribution','Projectile','Wedge','Circular duct');
+k=1;
+% BO = input('\n Insert Bernstein polynomial order ... ');
+BO=5;
+% new_num_pts = input('\n Insert number of points of analitically smooth airfoil ... ');
+new_num_pts=300;
+new_num_pts = round(new_num_pts /2.);
+
+% SpacingLaw = menu('Point distribution','Uniform','Full cosine - Dense near both LE and TE','Half cosine - Dense near LE','Half sine - Dense near TE','Read from file - xnew.dat');
+SpacingLaw = 3;
+
+switch k
+    case 1
+    N1=0.5;
+    N2=1.0;
+    case 2
+    N1=0.5;
+    N2=0.5;
+    case 3
+    N1=1.0;
+    N2=1.0;
+    case 4
+    N1=0.75;
+    N2=0.75;
+    case 5
+    N1=0.75;
+    N2=0.25;
+    case 6
+    N1=1.0;
+    N2=0.001;
+    case 7
+    N1=0.001;
+    N2=0.001;
+end
+
+% Re = input('\n Insert Flight Reynolds Number ... ');
+
+Re=1e6;
+
+% DO NOT CHANGE BELOW !!!
+% REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH-
+
+x=Airfoil(:,1);
+y=Airfoil(:,2);
+
+npt=length(x);       %npt   ==> num. points defining airfoil 
+[xmin,ixmin]=min(x); %ixmin ==> num. points defining upper airfoil 
+[xmax,ixmax]=max(x);
+
+chord=xmax-xmin;
+
+if ik==1 %Clockwise
+    for i=1:ixmin
+       xl(i)=(x(i)-xmin)/chord;
+       yl(i)=(y(i)-y(ixmin))/chord;
+    end
+    
+    npt_lower=length(xl);
+
+    for i=ixmin:npt
+       xu(i-ixmin+1)=(x(i)-xmin)/chord; 
+       yu(i-ixmin+1)=(y(i)-y(ixmin))/chord;
+    end
+
+    npt_upper=length(xu);
+    
+    dzTEu=(y(npt)-y(ixmin))/chord;    % z/c location of Upper TE
+    dzTEl=(y(1)-y(ixmin))/chord;      % z/c location of Lower TE
+end
+
+if ik==2 %Counter-Clockwise
+    
+    j=0;
+    for i=npt:-1:ixmin
+       j=j+1;
+       xl(j)=(x(i)-xmin)/chord;
+       yl(j)=(y(i)-y(ixmin))/chord;
+    end
+    
+    npt_lower=length(xl);
+    j=0;
+    
+    for i=ixmin:-1:1
+       j=j+1;
+       xu(j)=(x(i)-xmin)/chord;
+       yu(j)=(y(i)-y(ixmin))/chord;
+    end
+       
+    npt_upper=length(xu);
+    dzTEu=(y(1)-y(ixmin))/chord;        % z/c location of Upper TE
+    dzTEl=(y(npt)-y(ixmin))/chord;      % z/c location of Lower TE
+    
+end
+% REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH-
+% Computing upper side smooth profile coefficients
+% REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH-
+for i=1:npt_upper    
+    for r=0:BO
+       K(r+1)= factorial(BO)/(factorial(r)*(factorial(BO-r))); 
+       S(r+1)=xu(i)^r*(1-xu(i))^(BO-r);
+       A(i,r+1)=xu(i)^N1*(1-xu(i))^N2*K(r+1)*S(r+1);
+    end
+    B(i)=yu(i)-xu(i)*dzTEu;
+end
+
+Aupper=pinv(A)*B';
+% REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH-
+clear K;
+clear S;
+clear A;
+clear B;
+% REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH-
+% Computing lower side smooth profile coefficients
+% REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH-
+for i=1:ixmin
+    for r=0:BO
+       K(r+1)= factorial(BO)/(factorial(r)*(factorial(BO-r))); 
+       S(r+1)=xl(i)^r*(1-xl(i))^(BO-r);
+       A(i,r+1)=xl(i)^N1*(1-xl(i))^N2*K(r+1)*S(r+1);
+    end
+    B(i)=yl(i)-xl(i)*dzTEl;
+end
+
+Alower=pinv(A)*B';
+% REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH-
+% Fill up new points
+% REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH-
+xend=1.0;
+xstart=0.0;
+xnew=Point_Distribution(xstart,xend,new_num_pts,SpacingLaw);
+new_num_pts=length(xnew);
+n_check_pt=6;
+xcheck(1)=0.0125;
+xcheck(2)=0.90;
+xcheck(3)=0.95;
+xcheck(4)=0.99;
+xcheck(5)=0.0015;
+xcheck(6)=0.06;
+% REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH-
+% Computing analitically smooth airfoil (unpafoil)
+% REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH-
+for i=1:new_num_pts
+    supp=0.0;
+    slow=0.0;
+    sthi=0.0;
+    scam=0.0;
+    for r=0:BO
+       K(r+1)= factorial(BO)/(factorial(r)*(factorial(BO-r))); 
+       S(r+1)=xnew(i)^r*(1-xnew(i))^(BO-r);
+       slow=slow+K(r+1)*S(r+1)*Alower(r+1);
+       supp=supp+K(r+1)*S(r+1)*Aupper(r+1);
+       sthi=sthi+K(r+1)*S(r+1)*(Aupper(r+1)-Alower(r+1))/2.;
+       scam=scam+K(r+1)*S(r+1)*(Aupper(r+1)+Alower(r+1))/2.;
+       zupp(i)=xnew(i)^N1*(1-xnew(i))^N2*supp+xnew(i)*dzTEu;
+       zlow(i)=xnew(i)^N1*(1-xnew(i))^N2*slow+xnew(i)*dzTEl;
+       zthi(i)=xnew(i)^N1*(1-xnew(i))^N2*sthi+xnew(i)*(dzTEu-dzTEl)/2.;
+       zcam(i)=xnew(i)^N1*(1-xnew(i))^N2*scam+xnew(i)*(dzTEu+dzTEl)/2.;
+    end    
+end
+% REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH-
+% Computing distances
+% REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH-
+for i=1:npt_lower    
+    sld=0.0;    
+    for r=0:BO
+       K(r+1)= factorial(BO)/(factorial(r)*(factorial(BO-r))); 
+       Sd(r+1)=xl(i)^r*(1-xl(i))^(BO-r);
+       sld=sld+K(r+1)*Sd(r+1)*Alower(r+1);       
+       zld(i)=xl(i)^N1*(1-xl(i))^N2*sld+xl(i)*dzTEl;       
+    end    
+end
+
+clear Sd;
+
+for i=1:npt_upper  
+    sud=0.0;    
+    for r=0:BO
+       K(r+1)= factorial(BO)/(factorial(r)*(factorial(BO-r))); 
+       Sd(r+1)=xu(i)^r*(1-xu(i))^(BO-r);
+       sud=sud+K(r+1)*Sd(r+1)*Aupper(r+1);            
+       zud(i)=xu(i)^N1*(1-xu(i))^N2*sud+xu(i)*dzTEl;
+    end    
+end
+
+dist_low=distance(yl,zld,npt_lower); %Compute distance between original and unpa foil
+dist_upp=distance(yu,zud,npt_upper); %at given x(i) (which are the originals ones)
+% REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH-
+% Computing check points
+% REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH-
+for i=1:n_check_pt
+    supp_c=0.0;
+    slow_c=0.0;
+    sthi_c=0.0;
+    scam_c=0.0;
+    for r=0:BO
+       K(r+1)= factorial(BO)/(factorial(r)*(factorial(BO-r))); 
+       S(r+1)=xcheck(i)^r*(1-xcheck(i))^(BO-r);
+       slow_c=slow_c+K(r+1)*S(r+1)*Alower(r+1);
+       supp_c=supp_c+K(r+1)*S(r+1)*Aupper(r+1);
+       sthi_c=sthi_c+K(r+1)*S(r+1)*(Aupper(r+1)-Alower(r+1))/2.;
+       scam_c=scam_c+K(r+1)*S(r+1)*(Aupper(r+1)+Alower(r+1))/2.;
+       zupp_c(i)=xcheck(i)^N1*(1-xcheck(i))^N2*supp_c+xcheck(i)*dzTEu;
+       zlow_c(i)=xcheck(i)^N1*(1-xcheck(i))^N2*slow_c+xcheck(i)*dzTEl;
+       zthi_c(i)=xcheck(i)^N1*(1-xcheck(i))^N2*sthi_c+xcheck(i)*(dzTEu-dzTEl)/2.;
+       zcam_c(i)=xcheck(i)^N1*(1-xcheck(i))^N2*scam_c+xcheck(i)*(dzTEu+dzTEl)/2.;  
+    end    
+end
+
+Y90=zupp_c(2)-zlow_c(2);
+Y95=zupp_c(3)-zlow_c(3);
+Y99=zupp_c(4)-zlow_c(4);
+PHETE90=0.5*(Y90-Y99)/0.09;
+PHETE95=0.5*(Y95-Y99)/0.04;
+DY=zupp_c(6)-zupp_c(5);
+
+clc
+
+fprintf('\n ************************************************************');
+fprintf('\n * Stall check @ x/c ... %8.4f as in NACA-TN-3963    *',xcheck(1));
+fprintf('\n * Upper y/c  ... %8.4f                              *',zupp_c(1));
+fprintf('\n * Lower y/c  ... %8.4f                              *',zlow_c(1));
+fprintf('\n ************************************************************ \n');
+
+fprintf('\n ************************************************************');
+fprintf('\n * Cumulative distance between:                      *');
+fprintf('\n * Original and unpa lower foil  ... %8.4f           *',dist_low);
+fprintf('\n * Original and unpa upper foil  ... %8.4f           *',dist_upp);
+fprintf('\n ************************************************************ \n');
+
+for i=1:new_num_pts 
+    dx1=0.0;
+    dx2=0.0;
+    for r=0:BO
+       K(r+1)= factorial(BO)/(factorial(r)*(factorial(BO-r)));       
+       S1(r+1)=dS(xnew(i),K(r+1),r,BO,N1,N2);
+       dx1=dx1+S1(r+1)*Aupper(r+1);             
+       S2(r+1)=ddS(xnew(i),K(r+1),r,BO,N1,N2);
+       dx2=dx2+S2(r+1)*Aupper(r+1);       
+       d1u(i)=dx1;
+       d2u(i)=dx2;
+    end    
+end
+
+for i=1:new_num_pts 
+    dx1=0.0;
+    dx2=0.0;
+    for r=0:BO
+       K(r+1)= factorial(BO)/(factorial(r)*(factorial(BO-r)));       
+       S1(r+1)=dS(xnew(i),K(r+1),r,BO,N1,N2);
+       dx1=dx1+S1(r+1)*Alower(r+1);             
+       S2(r+1)=ddS(xnew(i),K(r+1),r,BO,N1,N2);
+       dx2=dx2+S2(r+1)*Alower(r+1);       
+       d1l(i)=dx1;
+       d2l(i)=dx2;
+    end    
+end
+% REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH-
+% Computing max thickness & camber
+% REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH-
+[zmax,izmax]=max(abs(zthi));
+[cmax,icmax]=max(abs(zcam));
+t_c=2.*zmax;
+% REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH-
+% Writing data on file
+% REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH-
+M=[xnew;zupp;zlow;zthi;zcam];
+Q=[Aupper';Alower'];     
+M=M';
+Q=Q';
+% REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH-
+[filesmoo,pathsmoo] = uiputfile('*.dat','Save Smoothed Airfoil As');
+
+mysmoothfile=strcat(pathsmoo,filesmoo);
+myunpafile=strcat(pathsmoo,'unpafoil.dat');
+myunpaadimfile=strcat(pathsmoo,'adimfoil.dat');
+mycoefffile=strcat(pathsmoo,'coeff.dat');
+myauxdatafile=strcat(pathsmoo,'airfoil.aux');
+
+fid = fopen(myunpafile,'w');
+fprintf(fid,'#Bernstein Polynomial order BO .................: %i\n',BO);  
+fprintf(fid,'#Number of points of analitically smooth airfoil: %i\n',new_num_pts);  
+fprintf(fid,'#Point spacing law .............................: %i\n',SpacingLaw);
+fprintf(fid,'#Airfoil chord .................................: %12.8f\n',chord);
+fprintf(fid, '%s %12.8f %12.8f \n','#L.E. coordinates ..............................:',xmin,y(ixmin));
+fprintf(fid, '%s %12.8f %12.8f \n','#Max thickness and x/c location ................:',t_c,xnew(izmax));
+fprintf(fid, '%s %12.8f %12.8f \n','#Max camber and x/c location ...................:',cmax,xnew(icmax));
+fprintf(fid,'#     x/c       z/c upper    z/c lower    thickness    camber\n');
+for i=1:new_num_pts
+    fprintf(fid,'%12.8f %12.8f %12.8f %12.8f %12.8f \n',M(i,1),M(i,2),M(i,3),M(i,4),M(i,5));
+end
+fclose(fid);
+
+fid = fopen(mysmoothfile,'w');
+
+fprintf(fid,'%s %s %s\n','# ',myfile,' x/c         z/c');
+for i=1:new_num_pts    
+    xs=M(new_num_pts-i+1,1)*chord+xmin;
+    zs=M(new_num_pts-i+1,3)*chord+y(ixmin);   
+    fprintf(fid,'%12.8f %12.8f\n',xs,zs);  
+end
+for i=2:new_num_pts    
+    xs=M(i,1)*chord+xmin;
+    zs=M(i,2)*chord+y(ixmin);       
+    fprintf(fid,'%12.8f %12.8f\n',xs,zs);
+end
+
+fclose(fid);
+
+fid = fopen(myunpaadimfile,'w');
+
+fprintf(fid,'%s \n','#  x/c         z/c');
+for i=1:new_num_pts    
+    xs=M(new_num_pts-i+1,1);
+    zs=M(new_num_pts-i+1,3);   
+    fprintf(fid,'%12.8f %12.8f\n',xs,zs);  
+end
+for i=2:new_num_pts    
+    xs=M(i,1);
+    zs=M(i,2);     
+    fprintf(fid,'%12.8f %12.8f\n',xs,zs);
+end
+
+fclose(fid);
+% End writing a-dimensionalized foil
+
+dummy=0.0;
+
+fid = fopen(mycoefffile,'w');
+fprintf(fid,'%%Upper foil Lower foil coefficients (first \t%i\t lines) \n',BO+1);
+fprintf(fid,'%%Bernstein Polynomial order BO .................: %i\n',BO);
+fprintf(fid,'%%Upper and Lower TE coordinates.................: %12.8f %12.8f\n',dzTEu,dzTEl);
+fprintf(fid,'%%Shape factors .................................: %12.8f %12.8f\n',N1,N2);
+fprintf(fid,'%%Num of points and Spacing Code ................: %i %i\n',new_num_pts,SpacingLaw);
+fprintf(fid,'%%LE coodinates  ................................: %12.8f %12.8f\n',xmin,y(ixmin));
+fprintf(fid,'%%Chord and dummy................................: %12.8f %12.8f\n',chord,dummy);
+fprintf(fid,'%%max thicknes and location .....................: %12.8f %12.8f\n',t_c,xnew(izmax));
+fprintf(fid,'%%max fineness and location .....................: %12.8f %12.8f\n',cmax,xnew(icmax));
+
+for i=1:BO+1
+    fprintf(fid,'%12.8f %12.8f \n',Q(i,1),Q(i,2));
+end
+fprintf(fid,'%12.8f %12.8f \n',dzTEu,dzTEl);
+fprintf(fid,'%12.8f %12.8f \n',N1,N2);
+fprintf(fid,'%i %i \n',new_num_pts,SpacingLaw);
+fprintf(fid,'%12.8f %12.8f \n',xmin,y(ixmin));
+fprintf(fid,'%12.8f %12.8f \n',chord,dummy);
+fprintf(fid,'%12.8f %12.8f \n',t_c,xnew(izmax));
+fprintf(fid,'%12.8f %12.8f \n',cmax,xnew(icmax));
+fclose(fid);
+
+fid = fopen(myauxdatafile,'w');
+fprintf(fid,'%s %s\n',' Original file name: ',myfile);
+fprintf(fid,' Stall check @ x/c ... %8.4f as in NACA-TN-3963 \n',xcheck(1));
+fprintf(fid,' x/c ... %8.4f y/c upper ... %8.4f \n',xcheck(1),zupp_c(1));
+fprintf(fid,' x/c ... %8.4f y/c lower ... %8.4f \n',xcheck(1),zlow_c(1));
+fprintf(fid,' max thickness ... %8.4f @ x/c ... %8.4f \n',t_c,xnew(izmax));
+fprintf(fid,' max camber ...... %8.4f @ x/c ... %8.4f \n',cmax,xnew(icmax));
+fprintf(fid,' tan(phi/2) ...... %8.4f @ x/c ... 0.90 (%8.4f deg)\n',PHETE90,atan(PHETE90)*180./pi);
+fprintf(fid,' tan(phi/2) ...... %8.4f @ x/c ... 0.95 (%8.4f deg)\n',PHETE95,atan(PHETE95)*180./pi);
+fprintf(fid,' LE sharpness parameter DY ...... %8.4f \n',DY);
+fprintf(fid,' Cumulative distance between: \n');
+fprintf(fid,' Original and unpa lower foil  ... %12.4f \n',dist_low);
+fprintf(fid,' Original and unpa upper foil  ... %12.4f \n',dist_upp);
+fclose(fid);
+
+fprintf('\n Output files: \n')
+fprintf('\n 1) %s : Analitically smoothed airfoil',filesmoo)
+fprintf('\n 2) unpafoil.dat : A-dimensional airfoil decomposition')
+fprintf('\n 3) coeff.dat files : Polynomial coefficients file ')
+fprintf('\n 4) adimfoil.dat : A-dimensional analitically smoothed airfoil')
+fprintf('\n 5) airfoil.aux : Auxiliary geometrical data \n')
+fprintf('\n  *** END OF COMPUTATION  *** \n')
+
+if (Re <1.e5) || (Re > 1.e9)
+    fprintf('\n    ==> Reynolds number outside standard range! Check stall plot not available <== \n');
+end
+    
+% REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH-
+% Plotting of results
+% REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH-
+plot(xu,yu,'b','LineWidth',2);
+grid on;
+hold on
+plot(xl,yl,'r','LineWidth',2);
+plot(M(:,1),M(:,2),'bo');
+plot(M(:,1),M(:,3),'ro');
+title('Original vs. smoothed airfoil')
+legend('Original foil upper','Original foil lower','Unpafoil upper','Unpafoil lower')
+xlabel('x/c')  
+ylabel('z/c')
+
+figure(2)
+plot(M(:,1),M(:,4),'LineWidth',2);
+grid on;
+hold on
+plot(M(:,1),M(:,5),'g','LineWidth',2);
+title('Smoothed airfoil decomposition')
+legend('Thickness','Camber')
+xlabel('x/c')  
+ylabel('z/c')
+
+%
+figure(3)
+subplot(2,1,1)
+plot(xnew,d1u,'b');
+title('Smoothed airfoil curvature analysis')
+grid on;
+hold on
+plot(xnew,d1l,'r');
+axis([0.0 1.0 -2.5 2.5])
+legend('1st derivative upper','1st derivative lower')
+xlabel('x/c') 
+ylabel('dz/dx')
+hold off
+subplot(2,1,2)
+plot(xnew,d2u,'b');
+hold on
+plot(xnew,d2l,'r');
+axis([0.0 1.0 -1.5 1.5])
+grid on;
+legend('2nd derivative upper','2nd derivative lower')
+xlabel('x/c')   
+ylabel('d^2z/dx^2')
+
+% uiopen('stall.fig',4)
+% hold on
+% plot(abs(zupp_c(1)*100),Re,'ro','MarkerFaceColor','r')
+% plot(abs(zlow_c(1)*100),Re,'bo','MarkerFaceColor','b')
+% legend('Upper side stall','Lower side stall')
+% 
+% 
+
+##### SOURCE END #####
+--></body></html>

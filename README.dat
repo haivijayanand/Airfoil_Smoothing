@@ -1,0 +1,9 @@
+run unpa
+1) choose NACA63A015.dat as input file (given clockwise)
+2) choose clockwise
+3) choose NACA-type airfoil (works in most cases)
+4) Insert Bernstein polynomial order: 5 is fine (3 to 7 is a good range)
+5) Insert number of points of analitically smooth airfoil: 99
+6) Choose a point distribution: full cosine
+7) Insert flight Reynolds number: 5e6 (based on your flow conditions)
+8) Save smoothed foil: NACA63A015-smo.dat
